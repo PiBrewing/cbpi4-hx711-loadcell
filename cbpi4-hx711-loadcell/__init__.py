@@ -34,10 +34,12 @@ class CustomSensor(CBPiSensor):
         self.gain = int(self.props.get("gain",128))
         self.Interval = int(self.props.get("Interval",2))
         self.offset = int(self.props.get("offset",0))
-        self.scale = float(self.props.get("scale",1))
+        self.scale = int(float(self.props.get("scale",1)))
         self.calibration_active = False
         self.measurement_is_running = False
 
+ 
+        
         logging.info("INIT HX711:")
         logging.info("dout: {}".format(self.dout))
         logging.info("pd_sck: {}".format(self.pd_sck))
