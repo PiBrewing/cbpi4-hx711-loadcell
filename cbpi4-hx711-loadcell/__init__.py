@@ -8,6 +8,8 @@ from unittest.mock import MagicMock, patch
 import asyncio
 import random
 from cbpi.api import *
+import time
+from cbpi.api.timer import Timer
 from .hx711 import HX711
 from cbpi.api.dataclasses import NotificationAction, NotificationType
 
@@ -22,7 +24,8 @@ logger = logging.getLogger(__name__)
     Property.Select(label="Interval", options=[1,2,5,10,30,60], description="Interval in Seconds")])
 
 class CustomSensor(CBPiSensor):
-    
+
+
     def __init__(self, cbpi, id, props):
         super(CustomSensor, self).__init__(cbpi, id, props)
         self.value = 0
@@ -30,10 +33,12 @@ class CustomSensor(CBPiSensor):
         self.pd_sck = int(self.props.get("pd_sck",23))
         self.gain = int(self.props.get("gain",128))
         self.Interval = int(self.props.get("Interval",2))
-        self.offset = int(self.props.get("offset",0))
-        self.scale = int(self.props.get("scale",1))
+        self.offset = int(float(self.props.get("offset",0)))
+        self.scale = int(float(self.props.get("scale",1)))
         self.calibration_active = False
         self.measurement_is_running = False
+
+ 
         
         logging.info("INIT HX711:")
         logging.info("dout: {}".format(self.dout))
@@ -92,7 +97,7 @@ class CustomSensor(CBPiSensor):
         await asyncio.sleep(1)
         logging.info("Tare")
         self.hx.tare()
-        self.calibration_active = False       
+        self.calibration_active = False
 
     async def NextStep(self):
         self.next = True
@@ -130,13 +135,83 @@ class CustomSensor(CBPiSensor):
                     await asyncio.sleep(self.Interval)
                     pass
             except:
-                await asyncio.sleep(self.Interval)   
+                await asyncio.sleep(self.Interval)
                 pass
 
     def get_state(self):
         return dict(value=self.value)
 
+@parameters([Property.Number(label="Weight", description="Number of L to Tranfer", configurable=True),
+             Property.Number(label="Density", description="Expected Wort Density - 1.XXX <-> 1.2", configurable=True),
+             Property.Select(label="useDensity",options=["Yes","No"], description="Use Density Offset within this Step"),
+             Property.Actor(label="Actor",description="Actor to switch media flow on and off"),
+             Property.Sensor(label="Sensor")])
+
+class WeightStep(CBPiStep):
+
+    async def on_timer_done(self,timer):
+        self.summary = ""
+        self.cbpi.notify(self.name, 'Step finished. Transferred {} {}.'.format(round(self.current_volume,2),'L'), NotificationType.SUCCESS)
+
+        if self.actor is not None:
+            await self.actor_off(self.actor)
+        await self.next()
+
+    async def on_timer_update(self,timer, seconds):
+        await self.push_update()
+
+    async def on_start(self):
+        self.actor = self.props.get("Actor", None)
+        self.target_volume = float(self.props.get("Weight",0))
+        self.flowsensor = self.props.get("Sensor",None)
+        logging.info(self.flowsensor)
+        self.sensor = self.get_sensor(self.flowsensor)
+        logging.info(self.sensor)
+        self.resetsensor = self.props.get("Reset","Yes")
+        self.dens_flag = True if self.props.get("useDensity", "No") == "Yes" else False
+        self.density = float(self.props.get("Density",0))
+
+        #CustomSensor.self.hx.tare()
+        if self.timer is None:
+            self.timer = Timer(1,on_update=self.on_timer_update, on_done=self.on_timer_done)
+
+    async def on_stop(self):
+        if self.timer is not None:
+            await self.timer.stop()
+        self.summary = ""
+        if self.actor is not None:
+            await self.actor_off(self.actor)
+        await self.push_update()
+
+    async def reset(self):
+        self.timer = Timer(1,on_update=self.on_timer_update, on_done=self.on_timer_done)
+        if self.actor is not None:
+            await self.actor_off(self.actor)
+
+
+    async def run(self):
+        if self.actor is not None:
+            await self.actor_on(self.actor)
+        self.summary=""
+        await self.push_update()
+        while self.running == True:
+
+            self.current_volume = self.get_sensor_value(self.flowsensor).get("value") * self.density if self.dens_flag == True else self.get_sensor_value(self.flowsensor).get("value")
+            self.summary="Volume: {}, Target: {}".format(self.current_volume , self.target_volume)
+         #   self.cbpi.notify("WaterTransfer","Current: {}L, Target {}L".format(self.current_volume,self.target_volume), NotificationType.INFO)
+            await self.push_update()
+
+            if self.current_volume >= self.target_volume and self.timer.is_running is not True:
+                self.timer.start()
+                self.timer.is_running = True
+
+            await asyncio.sleep(0.2)
+
+        return StepResult.DONE
+
+
 
 def setup(cbpi):
     cbpi.plugin.register("HX711 Load Cell", CustomSensor)
+    cbpi.plugin.register("WeightStep", WeightStep)
     pass
