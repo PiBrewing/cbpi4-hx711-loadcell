@@ -145,16 +145,13 @@ class CustomSensor(CBPiSensor):
              Property.Number(label="Density", description="Expected Wort Density - 1.XXX <-> 1.2", configurable=True),
              Property.Select(label="useDensity",options=["Yes","No"], description="Use Density Offset within this Step"),
              Property.Actor(label="Actor",description="Actor to switch media flow on and off"),
-             Property.Sensor(label="Sensor"),
-             Property.Select(label="Reset", options=["Yes","No"],description="Tare Weight when done")])
+             Property.Sensor(label="Sensor")])
 
 class WeightStep(CBPiStep):
 
     async def on_timer_done(self,timer):
         self.summary = ""
         self.cbpi.notify(self.name, 'Step finished. Transferred {} {}.'.format(round(self.current_volume,2),'L'), NotificationType.SUCCESS)
-       # if self.resetsensor == "Yes":
-      #      self.sensor.instance.hx.tare()
 
         if self.actor is not None:
             await self.actor_off(self.actor)
