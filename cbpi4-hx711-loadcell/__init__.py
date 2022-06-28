@@ -197,7 +197,7 @@ class WeightStep(CBPiStep):
         while self.running == True:
 
             self.current_volume = self.get_sensor_value(self.flowsensor).get("value") * self.density if self.dens_flag == True else self.get_sensor_value(self.flowsensor).get("value")
-            self.summary="Volume: {}".format(self.current_volume)
+            self.summary="Volume: {}, Target: {}".format(self.current_volume , self.target_volume)
          #   self.cbpi.notify("WaterTransfer","Current: {}L, Target {}L".format(self.current_volume,self.target_volume), NotificationType.INFO)
             await self.push_update()
 
