@@ -38,8 +38,7 @@ class CustomSensor(CBPiSensor):
         self.calibration_active = False
         self.measurement_is_running = False
 
- 
-        
+
         logging.info("INIT HX711:")
         logging.info("dout: {}".format(self.dout))
         logging.info("pd_sck: {}".format(self.pd_sck))
@@ -49,6 +48,10 @@ class CustomSensor(CBPiSensor):
 
     @action(key="Tare Sensor", parameters=[])
     async def Reset(self, **kwargs):
+        self.hx.tare()
+        logging.info("Tare HX711 Loadcell")
+
+    def tarereset(self):
         self.hx.tare()
         logging.info("Tare HX711 Loadcell")
 
@@ -145,7 +148,10 @@ class CustomSensor(CBPiSensor):
              Property.Number(label="Density", description="Expected Wort Density - 1.XXX <-> 1.2", configurable=True),
              Property.Select(label="useDensity",options=["Yes","No"], description="Use Density Offset within this Step"),
              Property.Actor(label="Actor",description="Actor to switch media flow on and off"),
-             Property.Sensor(label="Sensor")])
+
+             Property.Sensor(label="Sensor"),
+             Property.Select(label="Reset", options=["Yes","No"],description="Tare Weight before starting")])
+
 
 class WeightStep(CBPiStep):
 
@@ -167,11 +173,13 @@ class WeightStep(CBPiStep):
         logging.info(self.flowsensor)
         self.sensor = self.get_sensor(self.flowsensor)
         logging.info(self.sensor)
-        self.resetsensor = self.props.get("Reset","Yes")
+
+        self.preresetsensor = self.props.get("Reset","Yes")
         self.dens_flag = True if self.props.get("useDensity", "No") == "Yes" else False
         self.density = float(self.props.get("Density",0))
+        if self.preresetsensor == "Yes":
+            self.sensor.instance.tarereset()
 
-        #CustomSensor.self.hx.tare()
         if self.timer is None:
             self.timer = Timer(1,on_update=self.on_timer_update, on_done=self.on_timer_done)
 
@@ -204,7 +212,6 @@ class WeightStep(CBPiStep):
             if self.current_volume >= self.target_volume and self.timer.is_running is not True:
                 self.timer.start()
                 self.timer.is_running = True
-
             await asyncio.sleep(0.2)
 
         return StepResult.DONE
