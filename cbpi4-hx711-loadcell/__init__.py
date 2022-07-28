@@ -38,6 +38,7 @@ class CustomSensor(CBPiSensor):
         self.calibration_active = False
         self.measurement_is_running = False
 
+
         logging.info("INIT HX711:")
         logging.info("dout: {}".format(self.dout))
         logging.info("pd_sck: {}".format(self.pd_sck))
@@ -147,14 +148,17 @@ class CustomSensor(CBPiSensor):
              Property.Number(label="Density", description="Expected Wort Density - 1.XXX <-> 1.2", configurable=True),
              Property.Select(label="useDensity",options=["Yes","No"], description="Use Density Offset within this Step"),
              Property.Actor(label="Actor",description="Actor to switch media flow on and off"),
+
              Property.Sensor(label="Sensor"),
              Property.Select(label="Reset", options=["Yes","No"],description="Tare Weight before starting")])
+
 
 class WeightStep(CBPiStep):
 
     async def on_timer_done(self,timer):
         self.summary = ""
         self.cbpi.notify(self.name, 'Step finished. Transferred {} {}.'.format(round(self.current_volume,2),'L'), NotificationType.SUCCESS)
+
         if self.actor is not None:
             await self.actor_off(self.actor)
         await self.next()
@@ -169,11 +173,13 @@ class WeightStep(CBPiStep):
         logging.info(self.flowsensor)
         self.sensor = self.get_sensor(self.flowsensor)
         logging.info(self.sensor)
+
         self.preresetsensor = self.props.get("Reset","Yes")
         self.dens_flag = True if self.props.get("useDensity", "No") == "Yes" else False
         self.density = float(self.props.get("Density",0))
         if self.preresetsensor == "Yes":
             self.sensor.instance.tarereset()
+
         if self.timer is None:
             self.timer = Timer(1,on_update=self.on_timer_update, on_done=self.on_timer_done)
 
@@ -197,14 +203,17 @@ class WeightStep(CBPiStep):
         self.summary=""
         await self.push_update()
         while self.running == True:
+
             self.current_volume = self.get_sensor_value(self.flowsensor).get("value") * self.density if self.dens_flag == True else self.get_sensor_value(self.flowsensor).get("value")
             self.summary="Volume: {}, Target: {}".format(self.current_volume , self.target_volume)
          #   self.cbpi.notify("WaterTransfer","Current: {}L, Target {}L".format(self.current_volume,self.target_volume), NotificationType.INFO)
             await self.push_update()
+
             if self.current_volume >= self.target_volume and self.timer.is_running is not True:
                 self.timer.start()
                 self.timer.is_running = True
             await asyncio.sleep(0.2)
+
         return StepResult.DONE
 
 
