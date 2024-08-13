@@ -109,7 +109,7 @@ class CustomSensor(CBPiSensor):
     async def run(self):
 
         logging.info("Setup HX711")
-        self.hx = SimpleHX711(self.dout, self.pd_sck, self.scale self.offset)
+        self.hx = SimpleHX711(self.dout, self.pd_sck, self.scale, self.offset)
         await asyncio.sleep(1)
         self.hx.setUnit(Mass.Unit.G)
         logging.info("Tare")
@@ -119,7 +119,7 @@ class CustomSensor(CBPiSensor):
             try:
                 if self.calibration_active == False:
                     self.measurement_is_running = True
-                    self.value = round(self.hx.weight(5),2)
+                    self.value = round(float(self.hx.weight(5)),2)
                     self.log_data(self.value)
                     self.push_update(self.value)
                     self.measurement_is_running = False
