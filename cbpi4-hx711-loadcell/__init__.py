@@ -55,7 +55,7 @@ class CustomSensor(CBPiSensor):
         self.hx.zero()
         logging.info("Tare HX711 Loadcell")
 
-    #@action(key="Calibrate Sensor", parameters=[Property.Number(label="weight",configurable=True, default_value = 0, description="Please enter the known weight of your calibration item and remove all weight from your scale")])
+    @action(key="Calibrate Sensor", parameters=[Property.Number(label="weight",configurable=True, default_value = 0, description="Please enter the known weight of your calibration item and remove all weight from your scale")])
     async def Calibrate(self ,weight = 0, **kwargs):
         self.next = False
         self.weight = float(weight)
@@ -68,38 +68,38 @@ class CustomSensor(CBPiSensor):
             logging.info("Waiting for Sensor")
             await asyncio.sleep(self.Interval)
             pass
-        #self.hx.set_offset(0)
-        #self.hx.set_reference_unit(1)
+        self.hx.zero()
         logging.info("Reset")
-        await self.hx.reset()
-        await asyncio.sleep(1)
+        self.zeroValue=self.hx.read(Options(10))
         logging.info("Calibrate HX711 Loadcell")
-        self.cal_offset = self.hx.read_average()
-        logging.info("Offset {}".format(self.cal_offset))
         self.cbpi.notify("Loadcell Calibration", "Please put your known weight on the scale and press next", NotificationType.INFO, action=[NotificationAction("Next Step", self.NextStep)])
         while not self.next == True:
             await asyncio.sleep(1)
             pass
         self.next = False
 
-        self.reading = self.hx.read_average()
-        self.calibration_factor = round(((self.reading-self.cal_offset) / self.weight),1)
+        self.raw = self.hx.read(Options(10))
+        self.refUnitFloat = round(((self.raw-self.zeroValue) / self.weight),2)
+        self.refUnit = round(self.refUnitFloat, 0)
+        if self.refUnit == 0:
+            self.refUnit=1
+
         logging.info("Scale Factor {}".format(self.calibration_factor))
-        self.cbpi.notify("Loadcell Calibration done", "Enter these values in the sensor hardware. Offset: {}; Scale: {}".format(self.cal_offset, self.calibration_factor),action=[NotificationAction("Next Step", self.NextStep)])
+        self.cbpi.notify("Loadcell Calibration done", "Enter these values in the sensor hardware. Offset: {}; Scale: {}".format(self.zeroValue, self.refUnit),action=[NotificationAction("Next Step", self.NextStep)])
         while not self.next == True:
             await asyncio.sleep(1)
             pass
         self.next = False
 
         logging.info("Set Offset")
-        self.hx.set_offset(self.offset)
+        self.hx.setOffset(str(round(self.zeroValue)))
         logging.info("Set Reference Unit")
-        self.hx.set_reference_unit(self.scale)
+        self.hx.setReferenceUnit(str(round(self.refUnit)))
         logging.info("Reset")
-        await self.hx.reset()
-        await asyncio.sleep(1)
+        #await self.hx.reset()
+        #await asyncio.sleep(1)
         logging.info("Tare")
-        self.hx.tare()
+        self.hx.zero()
         self.calibration_active = False
 
     async def NextStep(self):
