@@ -46,6 +46,12 @@ class CustomSensor(CBPiSensor):
         logging.info("offset: {}".format(self.offset))
         logging.info("scale: {}".format(self.scale))
 
+        logging.info("Setup HX711")
+        self.hx = SimpleHX711(self.dout, self.pd_sck, self.scale, self.offset)
+        self.hx.setUnit(Mass.Unit.G)
+        logging.info("Tare")
+        self.hx.zero()
+
     @action(key="Tare Sensor", parameters=[])
     async def Reset(self, **kwargs):
         self.hx.zero()
@@ -91,11 +97,11 @@ class CustomSensor(CBPiSensor):
             pass
         self.next = False
 
-        logging.info("Set Offset")
-        self.hx.setOffset(str(round(self.zeroValue)))
-        logging.info("Set Reference Unit")
-        self.hx.setReferenceUnit(str(round(self.refUnit)))
-        logging.info("Reset")
+        #logging.info("Set Offset")
+        #self.hx.setOffset(str(round(self.zeroValue)))
+        #logging.info("Set Reference Unit")
+        #self.hx.setReferenceUnit(str(round(self.refUnit)))
+        #logging.info("Reset")
         #await self.hx.reset()
         #await asyncio.sleep(1)
         logging.info("Tare")
@@ -107,13 +113,6 @@ class CustomSensor(CBPiSensor):
         pass
 
     async def run(self):
-
-        logging.info("Setup HX711")
-        self.hx = SimpleHX711(self.dout, self.pd_sck, self.scale, self.offset)
-        await asyncio.sleep(1)
-        self.hx.setUnit(Mass.Unit.G)
-        logging.info("Tare")
-        self.hx.zero()
 
         while self.running is True:
             try:
