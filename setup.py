@@ -12,4 +12,5 @@ setup(name='cbpi4-hx711-loadcell',
       '': ['*.txt', '*.rst', '*.yaml'],
       'cbpi4-hx711-loadcell': ['*','*.txt', '*.rst', '*.yaml']},
       packages=['cbpi4-hx711-loadcell'],
+      install_requires=["hx711-rpi-py"],
      )

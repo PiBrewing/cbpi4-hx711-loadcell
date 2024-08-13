@@ -10,7 +10,7 @@ import random
 from cbpi.api import *
 import time
 from cbpi.api.timer import Timer
-from .hx711 import HX711
+from HX711 import *
 from cbpi.api.dataclasses import NotificationAction, NotificationType
 
 logger = logging.getLogger(__name__)
@@ -48,14 +48,14 @@ class CustomSensor(CBPiSensor):
 
     @action(key="Tare Sensor", parameters=[])
     async def Reset(self, **kwargs):
-        self.hx.tare()
+        self.hx.zero()
         logging.info("Tare HX711 Loadcell")
 
     def tarereset(self):
-        self.hx.tare()
+        self.hx.zero()
         logging.info("Tare HX711 Loadcell")
 
-    @action(key="Calibrate Sensor", parameters=[Property.Number(label="weight",configurable=True, default_value = 0, description="Please enter the known weight of your calibration item and remove all weight from your scale")])
+    #@action(key="Calibrate Sensor", parameters=[Property.Number(label="weight",configurable=True, default_value = 0, description="Please enter the known weight of your calibration item and remove all weight from your scale")])
     async def Calibrate(self ,weight = 0, **kwargs):
         self.next = False
         self.weight = float(weight)
@@ -68,8 +68,8 @@ class CustomSensor(CBPiSensor):
             logging.info("Waiting for Sensor")
             await asyncio.sleep(self.Interval)
             pass
-        self.hx.set_offset(0)
-        self.hx.set_reference_unit(1)
+        #self.hx.set_offset(0)
+        #self.hx.set_reference_unit(1)
         logging.info("Reset")
         await self.hx.reset()
         await asyncio.sleep(1)
@@ -109,27 +109,17 @@ class CustomSensor(CBPiSensor):
     async def run(self):
 
         logging.info("Setup HX711")
-        self.hx = HX711(self.dout, self.pd_sck, self.gain)
-        logging.info("Set Reading Format")
-        self.hx.set_reading_format("MSB", "MSB")
-        logging.info("Set Offset")
-        self.hx.set_offset(self.offset)
-        logging.info("Set Reference Unit")
-        self.hx.set_reference_unit(self.scale)
-        logging.info("Reset")
-        await self.hx.reset()
+        self.hx = SimpleHX711(self.dout, self.pd_sck, self.scale self.offset)
         await asyncio.sleep(1)
+        self.hx.setUnit(Mass.Unit.G)
         logging.info("Tare")
-        self.hx.tare()
+        self.hx.zero()
 
         while self.running is True:
             try:
                 if self.calibration_active == False:
                     self.measurement_is_running = True
-                    self.value = round(self.hx.get_weight(5),2)
-                    await self.hx.power_down()
-                    await asyncio.sleep(.001)
-                    await self.hx.power_up()
+                    self.value = round(self.hx.weight(5),2)
                     self.log_data(self.value)
                     self.push_update(self.value)
                     self.measurement_is_running = False
@@ -220,5 +210,5 @@ class WeightStep(CBPiStep):
 
 def setup(cbpi):
     cbpi.plugin.register("HX711 Load Cell", CustomSensor)
-    cbpi.plugin.register("WeightStep", WeightStep)
+    #cbpi.plugin.register("WeightStep", WeightStep)
     pass
