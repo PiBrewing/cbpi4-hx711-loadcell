@@ -84,7 +84,7 @@ class CustomSensor(CBPiSensor):
         if self.refUnit == 0:
             self.refUnit=1
 
-        logging.info("Scale Factor {}".format(self.calibration_factor))
+        #logging.info("Scale Factor {}".format(self.calibration_factor))
         self.cbpi.notify("Loadcell Calibration done", "Enter these values in the sensor hardware. Offset: {}; Scale: {}".format(self.zeroValue, self.refUnit),action=[NotificationAction("Next Step", self.NextStep)])
         while not self.next == True:
             await asyncio.sleep(1)
