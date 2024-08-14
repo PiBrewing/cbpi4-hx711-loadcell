@@ -227,11 +227,6 @@ class CustomSensor(CBPiSensor):
 
         logging.info("Setup HX711")
         global hx
-        hx.setUnit(Mass.Unit.G)
-        hx.setReferenceUnit(self.scale)
-        hx.setOffset(self.offset)
-        logging.info("Tare")
-        hx.zero()
 
     @action(key="Tare Sensor", parameters=[])
     async def Reset(self, **kwargs):
@@ -288,6 +283,20 @@ class CustomSensor(CBPiSensor):
         pass
 
     async def run(self):
+        ready= False
+        while ready is False:
+            try:
+                hx.setUnit(Mass.Unit.G)
+                hx.setReferenceUnit(self.scale)
+                hx.setOffset(self.offset)
+                logging.info("Tare")
+                hx.zero()
+                ready=True
+            except:
+                pass
+
+
+
 
         while self.running is True:
             try:
