@@ -1,11 +1,14 @@
 from setuptools import setup
 
 setup(name='cbpi4-hx711-loadcell',
-      version='0.1.0.a2',
+      version='0.1.0.a3',
       description='CraftBeerPi Plugin',
-      author='',
-      author_email='',
-      url='',
+      author='Alexander Vollkopf',
+      author_email='avollkopf@web.de',
+      url='https://github.com/PiBrewing/cbpi4-hx711-loadcell',
+      license='GPLv3',
+      include_package_data=True,
+      keywords='globalsettings',
       include_package_data=True,
       package_data={
         # If any package contains *.txt or *.rst files, include them:
