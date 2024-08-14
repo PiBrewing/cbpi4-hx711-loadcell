@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='cbpi4-hx711-loadcell',
-      version='0.1.0.a1',
+      version='0.1.0.a2',
       description='CraftBeerPi Plugin',
       author='',
       author_email='',

@@ -12,8 +12,187 @@ import time
 from cbpi.api.timer import Timer
 from HX711 import *
 from cbpi.api.dataclasses import NotificationAction, NotificationType
+from cbpi.api.config import ConfigType
 
 logger = logging.getLogger(__name__)
+
+class HX711_Config(CBPiExtension):
+    def __init__(self,cbpi):
+        self.cbpi = cbpi
+        self._task = asyncio.create_task(self.init_sensor())
+
+
+    async def init_sensor(self):
+        plugin = await self.cbpi.plugin.load_plugin_list("cbpi4-hx711-loadcell")
+        self.version=plugin[0].get("Version","0.0.0")
+        self.name=plugin[0].get("Name","cbpi4-hx711-loadcell")
+
+        self.hx711_update = self.cbpi.config.get(self.name+"_update", None)
+
+        await self.HX711_settings()
+        
+        self.dout = self.cbpi.config.get("HX711_dout", 5)
+        self.sck = self.cbpi.config.get("HX711_sck", 6)
+        global hx 
+        hx=SimpleHX711(self.dout, self.sck)
+
+    async def HX711_settings(self):
+        global HX711_dout
+        global HX711_sck
+        HX711_dout = self.cbpi.config.get("HX711_dout", None)
+        if HX711_dout is None:
+            logger.info("INIT HX711_dout")
+            try:
+                await self.cbpi.config.add("HX711_dout", 5, type=ConfigType.SELECT, description="HX711 dout GPIO",
+                                                                                                    source=self.name,
+                                                                                        options=[{"label": "0", "value": 0},
+                                                                                                {"label": "1", "value": 1},
+                                                                                                {"label": "2", "value": 2},
+                                                                                                {"label": "3", "value": 3},
+                                                                                                {"label": "4", "value": 4},
+                                                                                                {"label": "5", "value": 5},
+                                                                                                {"label": "6", "value": 6},
+                                                                                                {"label": "7", "value": 7},
+                                                                                                {"label": "8", "value": 8},
+                                                                                                {"label": "9", "value": 9},
+                                                                                                {"label": "10", "value": 10},
+                                                                                                {"label": "11", "value": 11},
+                                                                                                {"label": "12", "value": 12},
+                                                                                                {"label": "13", "value": 13},
+                                                                                                {"label": "14", "value": 14},
+                                                                                                {"label": "15", "value": 15},
+                                                                                                {"label": "16", "value": 16},
+                                                                                                {"label": "17", "value": 17},
+                                                                                                {"label": "18", "value": 18},
+                                                                                                {"label": "19", "value": 19},
+                                                                                                {"label": "20", "value": 20},
+                                                                                                {"label": "21", "value": 21},
+                                                                                                {"label": "22", "value": 22},
+                                                                                                {"label": "23", "value": 23},
+                                                                                                {"label": "24", "value": 24},
+                                                                                                {"label": "25", "value": 25},
+                                                                                                {"label": "26", "value": 26},
+                                                                                                {"label": "27", "value": 27}])
+                                                                                                            
+                HX711_dout = self.cbpi.config.get("HX711_dout", None)
+            except:
+                logger.warning('Unable to update database')
+        else:
+            if self.hx711_update == None or self.hx711_update != self.version:
+                try:
+                    await self.cbpi.config.add("HX711_dout", HX711_dout, type=ConfigType.SELECT, description="HX711 dout GPIO",
+                                                                                                    source=self.name,
+                                                                                        options=[{"label": "0", "value": 0},
+                                                                                                {"label": "1", "value": 1},
+                                                                                                {"label": "2", "value": 2},
+                                                                                                {"label": "3", "value": 3},
+                                                                                                {"label": "4", "value": 4},
+                                                                                                {"label": "5", "value": 5},
+                                                                                                {"label": "6", "value": 6},
+                                                                                                {"label": "7", "value": 7},
+                                                                                                {"label": "8", "value": 8},
+                                                                                                {"label": "9", "value": 9},
+                                                                                                {"label": "10", "value": 10},
+                                                                                                {"label": "11", "value": 11},
+                                                                                                {"label": "12", "value": 12},
+                                                                                                {"label": "13", "value": 13},
+                                                                                                {"label": "14", "value": 14},
+                                                                                                {"label": "15", "value": 15},
+                                                                                                {"label": "16", "value": 16},
+                                                                                                {"label": "17", "value": 17},
+                                                                                                {"label": "18", "value": 18},
+                                                                                                {"label": "19", "value": 19},
+                                                                                                {"label": "20", "value": 20},
+                                                                                                {"label": "21", "value": 21},
+                                                                                                {"label": "22", "value": 22},
+                                                                                                {"label": "23", "value": 23},
+                                                                                                {"label": "24", "value": 24},
+                                                                                                {"label": "25", "value": 25},
+                                                                                                {"label": "26", "value": 26},
+                                                                                                {"label": "27", "value": 27}])
+                except:
+                    logger.warning('Unable to update database')
+
+        HX711_sck = self.cbpi.config.get("HX711_sck", None)
+        if HX711_dout is None:
+            logger.info("INIT HX711_sck")
+            try:
+                await self.cbpi.config.add("HX711_sck", 6, type=ConfigType.SELECT, description="HX711 sck GPIO",
+                                                                                                    source=self.name,
+                                                                                        options=[{"label": "0", "value": 0},
+                                                                                                {"label": "1", "value": 1},
+                                                                                                {"label": "2", "value": 2},
+                                                                                                {"label": "3", "value": 3},
+                                                                                                {"label": "4", "value": 4},
+                                                                                                {"label": "5", "value": 5},
+                                                                                                {"label": "6", "value": 6},
+                                                                                                {"label": "7", "value": 7},
+                                                                                                {"label": "8", "value": 8},
+                                                                                                {"label": "9", "value": 9},
+                                                                                                {"label": "10", "value": 10},
+                                                                                                {"label": "11", "value": 11},
+                                                                                                {"label": "12", "value": 12},
+                                                                                                {"label": "13", "value": 13},
+                                                                                                {"label": "14", "value": 14},
+                                                                                                {"label": "15", "value": 15},
+                                                                                                {"label": "16", "value": 16},
+                                                                                                {"label": "17", "value": 17},
+                                                                                                {"label": "18", "value": 18},
+                                                                                                {"label": "19", "value": 19},
+                                                                                                {"label": "20", "value": 20},
+                                                                                                {"label": "21", "value": 21},
+                                                                                                {"label": "22", "value": 22},
+                                                                                                {"label": "23", "value": 23},
+                                                                                                {"label": "24", "value": 24},
+                                                                                                {"label": "25", "value": 25},
+                                                                                                {"label": "26", "value": 26},
+                                                                                                {"label": "27", "value": 27}])
+                                                                                                            
+                HX711_sck = self.cbpi.config.get("HX711_sck", None)
+            except:
+                logger.warning('Unable to update database')
+        else:
+            if self.hx711_update == None or self.hx711_update != self.version:
+                try:
+                    await self.cbpi.config.add("HX711_sck", HX711_sck, type=ConfigType.SELECT, description="HX711 sck GPIO",
+                                                                                                    source=self.name,
+                                                                                        options=[{"label": "0", "value": 0},
+                                                                                                {"label": "1", "value": 1},
+                                                                                                {"label": "2", "value": 2},
+                                                                                                {"label": "3", "value": 3},
+                                                                                                {"label": "4", "value": 4},
+                                                                                                {"label": "5", "value": 5},
+                                                                                                {"label": "6", "value": 6},
+                                                                                                {"label": "7", "value": 7},
+                                                                                                {"label": "8", "value": 8},
+                                                                                                {"label": "9", "value": 9},
+                                                                                                {"label": "10", "value": 10},
+                                                                                                {"label": "11", "value": 11},
+                                                                                                {"label": "12", "value": 12},
+                                                                                                {"label": "13", "value": 13},
+                                                                                                {"label": "14", "value": 14},
+                                                                                                {"label": "15", "value": 15},
+                                                                                                {"label": "16", "value": 16},
+                                                                                                {"label": "17", "value": 17},
+                                                                                                {"label": "18", "value": 18},
+                                                                                                {"label": "19", "value": 19},
+                                                                                                {"label": "20", "value": 20},
+                                                                                                {"label": "21", "value": 21},
+                                                                                                {"label": "22", "value": 22},
+                                                                                                {"label": "23", "value": 23},
+                                                                                                {"label": "24", "value": 24},
+                                                                                                {"label": "25", "value": 25},
+                                                                                                {"label": "26", "value": 26},
+                                                                                                {"label": "27", "value": 27}])
+                except:
+                    logger.warning('Unable to update database')
+
+        if self.hx711_update == None or self.hx711_update != self.version:
+            try:
+                 await self.cbpi.config.add(self.name+"_update", self.version,type=ConfigType.STRING, description='HX711 Version update', source='hidden')
+            except Exception as e:
+                logger.warning('Unable to update database')
+                logger.warning(e)
 
 
 @parameters([Property.Select(label="dout", options=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27], description="GPIO Pin connected to the Serial Data Output Pin of the HX711"),
@@ -47,18 +226,20 @@ class CustomSensor(CBPiSensor):
         logging.info("scale: {}".format(self.scale))
 
         logging.info("Setup HX711")
-        self.hx = SimpleHX711(self.dout, self.pd_sck, self.scale, self.offset)
-        self.hx.setUnit(Mass.Unit.G)
+        global hx
+        hx.setUnit(Mass.Unit.G)
+        hx.setReferenceUnit(self.scale)
+        hx.setOffset(self.offset)
         logging.info("Tare")
-        self.hx.zero()
+        hx.zero()
 
     @action(key="Tare Sensor", parameters=[])
     async def Reset(self, **kwargs):
-        self.hx.zero()
+        hx.zero()
         logging.info("Tare HX711 Loadcell")
 
     def tarereset(self):
-        self.hx.zero()
+        hx.zero()
         logging.info("Tare HX711 Loadcell")
 
     @action(key="Calibrate Sensor", parameters=[Property.Number(label="weight",configurable=True, default_value = 0, description="Please enter the known weight of your calibration item and remove all weight from your scale")])
@@ -74,9 +255,9 @@ class CustomSensor(CBPiSensor):
             logging.info("Waiting for Sensor")
             await asyncio.sleep(self.Interval)
             pass
-        self.hx.zero()
+        hx.zero()
         logging.info("Reset")
-        self.zeroValue=self.hx.read(Options(10))
+        self.zeroValue=hx.read(Options(10))
         logging.info("Calibrate HX711 Loadcell")
         self.cbpi.notify("Loadcell Calibration", "Please put your known weight on the scale and press next", NotificationType.INFO, action=[NotificationAction("Next Step", self.NextStep)])
         while not self.next == True:
@@ -84,7 +265,7 @@ class CustomSensor(CBPiSensor):
             pass
         self.next = False
 
-        self.raw = self.hx.read(Options(10))
+        self.raw = hx.read(Options(10))
         self.refUnitFloat = round(((self.raw-self.zeroValue) / self.weight),2)
         self.refUnit = round(self.refUnitFloat, 0)
         if self.refUnit == 0:
@@ -96,16 +277,10 @@ class CustomSensor(CBPiSensor):
             await asyncio.sleep(1)
             pass
         self.next = False
-
-        #logging.info("Set Offset")
-        #self.hx.setOffset(str(round(self.zeroValue)))
-        #logging.info("Set Reference Unit")
-        #self.hx.setReferenceUnit(str(round(self.refUnit)))
-        #logging.info("Reset")
-        #await self.hx.reset()
-        #await asyncio.sleep(1)
+        hx.setReferenceUnit(self.refUnit)
+        hx.setOffset(self.zeroValue)
         logging.info("Tare")
-        self.hx.zero()
+        hx.zero()
         self.calibration_active = False
 
     async def NextStep(self):
@@ -118,7 +293,7 @@ class CustomSensor(CBPiSensor):
             try:
                 if self.calibration_active == False:
                     self.measurement_is_running = True
-                    self.value = round(float(self.hx.weight(5)),2)
+                    self.value = round(float(hx.weight(5)),2)
                     self.log_data(self.value)
                     self.push_update(self.value)
                     self.measurement_is_running = False
