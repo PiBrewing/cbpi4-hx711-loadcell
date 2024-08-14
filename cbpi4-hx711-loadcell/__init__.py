@@ -272,8 +272,6 @@ class CustomSensor(CBPiSensor):
             await asyncio.sleep(1)
             pass
         self.next = False
-        hx.setReferenceUnit(self.refUnit)
-        hx.setOffset(self.zeroValue)
         logging.info("Tare")
         hx.zero()
         self.calibration_active = False
