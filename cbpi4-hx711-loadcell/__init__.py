@@ -195,11 +195,8 @@ class HX711_Config(CBPiExtension):
                 logger.warning(e)
 
 
-@parameters([Property.Select(label="dout", options=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27], description="GPIO Pin connected to the Serial Data Output Pin of the HX711"),
-    Property.Select(label="pd_sck", options=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27], description="GPIO Pin connected to the Power Down & Seerial Clock Pin of the HX711"),
-    #Property.Select(label="gain", options = [128,64, 32],description = "Select gain for HX711"),
-    Property.Number(label="offset",configurable = True, default_value = 0, description="Offset for the HX711 scale from callibration setup (Default is 0)"),
-    Property.Number(label="scale",configurable = True, default_value = 0, description="Scale ratio input for the HX711 scale from callibration setup (Default is 1)"),
+@parameters([Property.Number(label="offset",configurable = True, default_value = 0, description="Offset for the HX711 scale from calibration setup (Default is 0)"),
+    Property.Number(label="scale",configurable = True, default_value = 0, description="Scale ratio input for the HX711 scale from calibration setup (Default is 1)"),
     Property.Select(label="Interval", options=[1,2,5,10,30,60], description="Interval in Seconds")])
 
 class CustomSensor(CBPiSensor):
