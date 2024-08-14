@@ -284,7 +284,8 @@ class CustomSensor(CBPiSensor):
 
     async def run(self):
         ready= False
-        while ready is False:
+        retries = 50
+        while ready is False and retries:
             try:
                 hx.setUnit(Mass.Unit.G)
                 hx.setReferenceUnit(self.scale)
@@ -293,6 +294,8 @@ class CustomSensor(CBPiSensor):
                 hx.zero()
                 ready=True
             except:
+                retries -=1
+                await asyncio.sleep(1)
                 pass
 
 
@@ -392,6 +395,7 @@ class WeightStep(CBPiStep):
 
 
 def setup(cbpi):
+    cbpi.plugin.register("HX711_Config", HX711_Config)
     cbpi.plugin.register("HX711 Load Cell", CustomSensor)
     cbpi.plugin.register("WeightStep", WeightStep)
     pass
