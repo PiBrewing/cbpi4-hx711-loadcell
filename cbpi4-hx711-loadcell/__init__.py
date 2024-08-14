@@ -205,9 +205,9 @@ class CustomSensor(CBPiSensor):
     def __init__(self, cbpi, id, props):
         super(CustomSensor, self).__init__(cbpi, id, props)
         self.value = 0
-        self.dout = int(self.props.get("dout",27))
-        self.pd_sck = int(self.props.get("pd_sck",23))
-        self.gain = int(self.props.get("gain",128))
+        #self.dout = int(self.props.get("dout",27))
+        #self.pd_sck = int(self.props.get("pd_sck",23))
+        #self.gain = int(self.props.get("gain",128))
         self.Interval = int(self.props.get("Interval",2))
         self.offset = int(float(self.props.get("offset",0)))
         self.scale = int(float(self.props.get("scale",1)))
@@ -216,9 +216,9 @@ class CustomSensor(CBPiSensor):
 
 
         logging.info("INIT HX711:")
-        logging.info("dout: {}".format(self.dout))
-        logging.info("pd_sck: {}".format(self.pd_sck))
-        logging.info("gain: {}".format(self.gain))
+        #logging.info("dout: {}".format(self.dout))
+        #logging.info("pd_sck: {}".format(self.pd_sck))
+        #logging.info("gain: {}".format(self.gain))
         logging.info("offset: {}".format(self.offset))
         logging.info("scale: {}".format(self.scale))
 
