@@ -9,7 +9,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(name='cbpi4-hx711-loadcell',
       version='0.1.0.a3',
-      description='CraftBeerPi Plugin',
+      description='CraftBeerPi 4 Plugin for hx711 loadcell',
       author='Alexander Vollkopf',
       author_email='avollkopf@web.de',
       url='https://github.com/PiBrewing/cbpi4-hx711-loadcell',
