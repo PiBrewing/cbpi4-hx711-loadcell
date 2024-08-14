@@ -7,7 +7,6 @@ setup(name='cbpi4-hx711-loadcell',
       author_email='avollkopf@web.de',
       url='https://github.com/PiBrewing/cbpi4-hx711-loadcell',
       license='GPLv3',
-      include_package_data=True,
       keywords='globalsettings',
       include_package_data=True,
       package_data={
