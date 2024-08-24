@@ -17,7 +17,8 @@ Then, you need to clone the hx711 repository as it serves as basis for the pytho
 Now change to the package directory and compile the package:
 
 `cd hx711`
-`make && make install`
+
+`make && sudo make install`
 
 Then run `sudo ldconfig` to allow other packages to access the hx711 library.
 
