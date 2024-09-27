@@ -33,8 +33,14 @@ class HX711_Config(CBPiExtension):
         
         self.dout = self.cbpi.config.get("HX711_dout", 5)
         self.sck = self.cbpi.config.get("HX711_sck", 6)
-        global hx 
-        hx=SimpleHX711(self.dout, self.sck)
+        global hx
+        global hx_active
+        try:
+            hx=SimpleHX711(self.dout, self.sck)
+            hx_active=True
+        except Exception as e:
+            hx_active = False
+            logging.error(f"Error HX711 initialization: {e}")
 
     async def HX711_settings(self):
         global HX711_dout
@@ -224,6 +230,7 @@ class CustomSensor(CBPiSensor):
 
         logging.info("Setup HX711")
         global hx
+        global hx_active
 
     @action(key="Tare Sensor", parameters=[])
     async def Reset(self, **kwargs):

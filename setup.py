@@ -8,7 +8,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name='cbpi4-hx711-loadcell',
-      version='0.1.0.a3',
+      version='0.1.0.a4',
       description='CraftBeerPi 4 Plugin for hx711 loadcell',
       author='Alexander Vollkopf',
       author_email='avollkopf@web.de',
